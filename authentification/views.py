@@ -12,7 +12,7 @@ def register_user(request):
     email = data.get('email')
     password = data.get('password')
     role = data.get('role')  # entreprise ou freelance
-
+    print(email , password)
     if not email or not password:
         return Response({"error": "Email et mot de passe requis"}, status=400)
 
