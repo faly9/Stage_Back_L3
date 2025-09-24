@@ -23,7 +23,10 @@ from django.conf.urls.static import static  # <-- pour servir les fichiers médi
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('authentification.urls')),
-    path('etr/',include('entreprise.urls'))
+    path('etr/',include('entreprise.urls')),
+    path('msn/', include('mission.urls')),
+    path('frl/', include('freelance.urls')),
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

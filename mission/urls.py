@@ -1,10 +1,10 @@
-# entreprise/urls.py
+# mission/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import EntrepriseViewSet
+from .views import MissionViewSet
 
 router = DefaultRouter()
-router.register(r'entreprises', EntrepriseViewSet, basename='entreprise')
+router.register(r'missions', MissionViewSet, basename='mission')
 
 urlpatterns = [
     path('', include(router.urls)),

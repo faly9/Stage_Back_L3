@@ -5,7 +5,7 @@ class Entreprise(models.Model):
     id_entreprise = models.AutoField(primary_key=True)
     nom = models.CharField(max_length=255)
     secteur = models.CharField(max_length=255)
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="entreprises"
@@ -18,3 +18,4 @@ class Entreprise(models.Model):
 
     def __str__(self):
         return self.nom
+

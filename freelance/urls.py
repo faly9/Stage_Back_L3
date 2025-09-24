@@ -1,10 +1,9 @@
-# entreprise/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import EntrepriseViewSet
+from .views import FreelanceViewSet
 
 router = DefaultRouter()
-router.register(r'entreprises', EntrepriseViewSet, basename='entreprise')
+router.register(r'freelances', FreelanceViewSet, basename='freelance')
 
 urlpatterns = [
     path('', include(router.urls)),
