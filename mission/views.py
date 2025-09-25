@@ -18,7 +18,10 @@ class MissionViewSet(viewsets.ModelViewSet):
         entreprise = Entreprise.objects.filter(user=user).first()
         if entreprise:
             return Mission.objects.filter(entreprise=entreprise)
-        return Mission.objects.none()
+        else:
+            print("freelance")
+        # Freelance → voir toutes les missions
+            return Mission.objects.all()
 
     @action(detail=False, methods=["get", "post"], url_path="me")
     def me(self, request):
@@ -27,6 +30,10 @@ class MissionViewSet(viewsets.ModelViewSet):
 
         if not entreprise:
             raise PermissionDenied("Seules les entreprises peuvent gérer leurs missions.")
+
+        #  # Si c’est un freelance → afficher toutes les missions disponibles
+        # if hasattr(user, "role") and user.role == "Freelance":
+        #     return Mission.objects.all()
 
         # GET → récupérer missions de l'entreprise
         if request.method == "GET":
