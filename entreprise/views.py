@@ -6,6 +6,7 @@ from .models import Entreprise
 from .serializers import EntrepriseSerializer
 from rest_framework.decorators import action
 from rest_framework import status
+from django.http import JsonResponse
 
 class EntrepriseViewSet(viewsets.ModelViewSet):
     serializer_class = EntrepriseSerializer
@@ -38,3 +39,8 @@ class EntrepriseViewSet(viewsets.ModelViewSet):
                 serializer.save(user=request.user)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def get_my_entreprise(request):
+    entreprise = Entreprise.objects.get(user=request.user)
+    print(entreprise.id_entreprise)
+    return JsonResponse({"entreprise_id": entreprise.id_entreprise})

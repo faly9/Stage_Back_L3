@@ -7,6 +7,8 @@ class CandidatureSerializer(serializers.ModelSerializer):
     freelance_nom = serializers.CharField(source="freelance.nom", read_only=True)
     date = serializers.DateTimeField(format="%d/%m/%Y", read_only=True)
     freelance_email = serializers.EmailField(source="freelance.user.email", read_only=True)
+    # Récupérer l'ID de l'entreprise liée à la mission
+    entreprise_id = serializers.IntegerField(source="mission.entreprise.id_entreprise", read_only=True)
     freelance_description = serializers.CharField(source="freelance.description", read_only=True)
     freelance_competence = serializers.CharField(source="freelance.competence", read_only=True)
     freelance_experience = serializers.CharField(source="freelance.experience", read_only=True)
@@ -25,6 +27,7 @@ class CandidatureSerializer(serializers.ModelSerializer):
             "freelance",
             "mission_titre",
             "freelance_nom",
+            "entreprise_id",
             "freelance_email",
             "freelance_description",
             "freelance_competence",
