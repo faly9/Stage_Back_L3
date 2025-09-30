@@ -6,7 +6,6 @@ class Candidature(models.Model):
         ("en_attente", "En attente"),        # quand le freelance postule
         ("recommandee", "Recommandée"),      # IA propose ce profil
         ("en_entretien", "En entretien"),    # entretien planifié ou en cours
-        ("refusee", "Refusée"),              # candidature rejetée
     ]
 
     id_candidature = models.AutoField(primary_key=True)
