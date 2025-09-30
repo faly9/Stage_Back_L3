@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'entreprise',
     'mission',
     'freelance',
-    'candidature'
+    'candidature',
 ]
 
 # Middleware

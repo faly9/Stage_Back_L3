@@ -3,10 +3,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError 
-
 from .models import Candidature
 from mission.models import Mission
 from freelance.models import Freelance
+
 
 class CandidatureConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -111,4 +111,25 @@ class CandidatureConsumer(AsyncWebsocketConsumer):
 
     # Méthode appelée automatiquement pour chaque message du groupe
     async def new_candidature(self, event):
+        await self.send(text_data=json.dumps(event["message"]))
+
+
+
+
+class NotificationEntretienConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.freelance_id = self.scope['url_route']['kwargs']['freelance_id']
+        self.group_name = f"freelance_{self.freelance_id}"
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+        print(f"✅ WS connecté pour Freelance {self.freelance_id}")
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def new_entretien(self, event):
+        """
+        Reçoit les notifications du signal et les envoie au frontend.
+        """
         await self.send(text_data=json.dumps(event["message"]))

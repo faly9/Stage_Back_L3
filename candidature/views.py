@@ -4,8 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Candidature
-from .serializers import CandidatureSerializer , UpdateCandidatureSerializer
+from .serializers import CandidatureSerializer , UpdateCandidatureSerializer , notification
 from entreprise.models import Entreprise
+from freelance.models import Freelance
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -53,3 +54,20 @@ def update_candidature(request, pk):
         serializer.save()
         return Response(serializer.data, status=200)
     return Response(serializer.errors, status=400)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_notifications_for_freelance(request):
+    """
+    Récupère toutes les candidatures liées au freelance connecté.
+    """
+    user = request.user
+    freelance = Freelance.objects.filter(user=user).first()
+
+    if not freelance:
+        return Response({"detail": "Vous devez être connecté en tant que freelance."}, status=403)
+
+    candidatures = Candidature.objects.filter(freelance=freelance).order_by("-date_entretien")
+    serializer = notification(candidatures, many=True)
+
+    return Response(serializer.data, status=200)
