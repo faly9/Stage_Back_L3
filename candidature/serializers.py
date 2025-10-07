@@ -39,6 +39,7 @@ class CandidatureSerializer(serializers.ModelSerializer):
             "date_entretien",
             "commentaire_entretien",
             "score",
+            "timezone"
         ]
         # Ces champs sont fixes → jamais modifiables
         read_only_fields = [
@@ -62,7 +63,7 @@ class CandidatureSerializer(serializers.ModelSerializer):
 class UpdateCandidatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidature
-        fields = ["id_candidature","status", "date_entretien", "commentaire_entretien", "score"]
+        fields = ["id_candidature","status", "timezone" , "date_entretien", "commentaire_entretien", "score"]
         read_only_fields=["id_candidature"]
 
 class notification(serializers.ModelSerializer):
@@ -73,4 +74,4 @@ class notification(serializers.ModelSerializer):
 
     class Meta:
         model = Candidature
-        fields = ["id_candidature","entreprise_photo","entreprise_nom","mission_titre","freelance_nom","status", "date_entretien", "commentaire_entretien"]
+        fields = ["id_candidature","entreprise_photo", "timezone" ,"entreprise_nom","mission_titre","freelance_nom","status", "date_entretien", "commentaire_entretien"]

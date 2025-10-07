@@ -14,7 +14,7 @@ class CandidatureAdmin(admin.ModelAdmin):
             "fields": ("mission", "freelance", "status", "score")
         }),
         ("Entretien", {
-            "fields": ("date_entretien", "commentaire_entretien"),
+            "fields": ("date_entretien", "commentaire_entretien" , "timezone"),
             "classes": ("collapse",),
         }),
         ("Métadonnées", {

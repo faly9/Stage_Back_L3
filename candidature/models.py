@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Candidature(models.Model):
     STATUS_CHOICES = [
         ("en_attente", "En attente"),        # quand le freelance postule
@@ -19,6 +20,7 @@ class Candidature(models.Model):
     # Infos entretien
     date_entretien = models.DateTimeField(null=True, blank=True)  # date/heure prévue
     commentaire_entretien = models.TextField(null=True, blank=True)  # notes de l’entretien
+    timezone = models.CharField(default="UTC",max_length=50) 
 
     # Score IA
     score = models.FloatField(default=0.0)
