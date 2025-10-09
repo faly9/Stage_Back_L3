@@ -22,6 +22,8 @@ def candidature_updated(sender, instance, created, **kwargs):
 
     channel_layer = get_channel_layer()
     freelance_id = instance.freelance.id_freelance
+    entreprise_id = instance.mission.entreprise.id_entreprise  # ID de l'entreprise
+
 
     message = {
         "id_candidature": instance.id_candidature,
@@ -42,3 +44,13 @@ def candidature_updated(sender, instance, created, **kwargs):
             "message": message
         }
     )
+
+     # ✅ Envoi à l'entreprise pour visualisation
+    async_to_sync(channel_layer.group_send)(
+        f"entreprise_{entreprise_id}",
+        {
+            "type": "new_entretien",
+            "message": message
+        }
+    )
+

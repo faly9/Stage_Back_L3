@@ -116,20 +116,36 @@ class CandidatureConsumer(AsyncWebsocketConsumer):
 
 
 
+# class NotificationEntretienConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         self.freelance_id = self.scope['url_route']['kwargs']['freelance_id']
+#         self.group_name = f"freelance_{self.freelance_id}"
+
+#         await self.channel_layer.group_add(self.group_name, self.channel_name)
+#         await self.accept()
+#         print(f"✅ WS connecté pour Freelance {self.freelance_id}")
+
+#     async def disconnect(self, close_code):
+#         await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+#     async def new_entretien(self, event):
+#         """
+#         Reçoit les notifications du signal et les envoie au frontend.
+#         """
+#         await self.send(text_data=json.dumps(event["message"]))
+
 class NotificationEntretienConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.freelance_id = self.scope['url_route']['kwargs']['freelance_id']
-        self.group_name = f"freelance_{self.freelance_id}"
+        self.user_type = self.scope['url_route']['kwargs']['user_type']  # "freelance" ou "entreprise"
+        self.user_id = self.scope['url_route']['kwargs']['user_id']
+        self.group_name = f"{self.user_type}_{self.user_id}"
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
-        print(f"✅ WS connecté pour Freelance {self.freelance_id}")
+        print(f"✅ WS connecté pour {self.user_type} {self.user_id}")
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def new_entretien(self, event):
-        """
-        Reçoit les notifications du signal et les envoie au frontend.
-        """
         await self.send(text_data=json.dumps(event["message"]))

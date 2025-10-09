@@ -71,3 +71,25 @@ def get_notifications_for_freelance(request):
     serializer = notification(candidatures, many=True)
 
     return Response(serializer.data, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_notifications_for_entreprise(request):
+    """
+    Récupère toutes les candidatures liées à l'entreprise connectée.
+    """
+    user = request.user
+    entreprise = Entreprise.objects.filter(user=user).first()
+
+    if not entreprise:
+        return Response(
+            {"detail": "Vous devez être connecté en tant qu'entreprise."}, status=403
+        )
+
+    candidatures = (
+        Candidature.objects.filter(mission__entreprise=entreprise)
+        .order_by("-date_entretien")
+    )
+
+    serializer = notification(candidatures, many=True)
+    return Response(serializer.data, status=200)
