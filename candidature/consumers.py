@@ -113,26 +113,11 @@ class CandidatureConsumer(AsyncWebsocketConsumer):
     async def new_candidature(self, event):
         await self.send(text_data=json.dumps(event["message"]))
 
+    async def new_entretien(self, event):
+    # Ignorer les messages de notification
+        print(f"⚠️ Message 'new_entretien' reçu par erreur dans CandidatureConsumer : {event}")
+        pass
 
-
-
-# class NotificationEntretienConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         self.freelance_id = self.scope['url_route']['kwargs']['freelance_id']
-#         self.group_name = f"freelance_{self.freelance_id}"
-
-#         await self.channel_layer.group_add(self.group_name, self.channel_name)
-#         await self.accept()
-#         print(f"✅ WS connecté pour Freelance {self.freelance_id}")
-
-#     async def disconnect(self, close_code):
-#         await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-#     async def new_entretien(self, event):
-#         """
-#         Reçoit les notifications du signal et les envoie au frontend.
-#         """
-#         await self.send(text_data=json.dumps(event["message"]))
 
 class NotificationEntretienConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -149,3 +134,9 @@ class NotificationEntretienConsumer(AsyncWebsocketConsumer):
 
     async def new_entretien(self, event):
         await self.send(text_data=json.dumps(event["message"]))
+
+    async def new_candidature(self, event):
+        pass
+
+
+
