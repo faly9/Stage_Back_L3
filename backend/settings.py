@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  
     'rest_framework',
     'corsheaders',
     'authentification',
@@ -27,7 +28,7 @@ INSTALLED_APPS = [
     'freelance',
     'candidature',
 ]
-
+SITE_ID = 1
 # Middleware
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -107,13 +108,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = "randriantsoafaly8@gmail.com"
-# EMAIL_HOST_PASSWORD = "lvic bbdf ogtj kymt"  # celui de l’étape précédente
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "randriantsoafaly8@gmail.com"
+EMAIL_HOST_PASSWORD = "lvic bbdf ogtj kymt"  # celui de l’étape précédente
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 
