@@ -7,8 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Sécurité
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = ["*"]
-BACKEND_URL = "http://localhost:8001"  # ton port Django réel
+ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1" , "backend"]
 
 # Applications installées
 INSTALLED_APPS = [
@@ -22,12 +21,15 @@ INSTALLED_APPS = [
     'django.contrib.sites',  
     'rest_framework',
     'corsheaders',
+
+    # apps locales
     'authentification',
     'entreprise',
     'mission',
     'freelance',
     'candidature',
 ]
+
 SITE_ID = 1
 # Middleware
 MIDDLEWARE = [
@@ -53,16 +55,15 @@ SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-
-
 ]
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -108,14 +109,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+
+# configuration de l'email
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "randriantsoafaly8@gmail.com"
-EMAIL_HOST_PASSWORD = "lvic bbdf ogtj kymt"  # celui de l’étape précédente
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")  # ton email
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # ton mot de passe d'application
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 
 # Internationalisation
@@ -132,12 +134,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Clé primaire par défaut
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Configuration de Channels avec Redis
+REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
+REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
     },
 }
+

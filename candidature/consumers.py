@@ -114,8 +114,6 @@ class CandidatureConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event["message"]))
 
     async def new_entretien(self, event):
-    # Ignorer les messages de notification
-        print(f"⚠️ Message 'new_entretien' reçu par erreur dans CandidatureConsumer : {event}")
         pass
 
 

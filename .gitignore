@@ -22,9 +22,8 @@ media/
 staticfiles/
 
 # Configs locales
-*.env
-.env.*
-secrets.json
+.env
+# secrets.json
 
 # IDE / éditeurs
 .vscode/
