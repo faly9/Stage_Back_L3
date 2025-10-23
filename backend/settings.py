@@ -4,12 +4,16 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# -------------------------------
 # Sécurité
+# -------------------------------
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1" , "backend"]
+ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1", "freelance.local"]
 
+# -------------------------------
 # Applications installées
+# -------------------------------
 INSTALLED_APPS = [
     'channels',
     'django.contrib.admin',
@@ -18,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  
+    'django.contrib.sites',
     'rest_framework',
     'corsheaders',
 
@@ -31,7 +35,10 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
+
+# -------------------------------
 # Middleware
+# -------------------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -42,14 +49,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ] 
-# settings.py
+
+# -------------------------------
+# DRF & Auth
+# -------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
 
+# -------------------------------
 # CORS pour React
+# -------------------------------
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
@@ -59,15 +71,18 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://freelance.local",  # ✅ domaine ingress prod
+    "http://freelance.local:32157",  # ✅ inclure le port NodePort si utilisé
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://freelance.local",
+    "http://freelance.local:32157",
 ]
 
+# -------------------------------
+# URLs et Templates
+# -------------------------------
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -87,8 +102,9 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "backend.asgi.application"
 
-
+# -------------------------------
 # Base de données MySQL
+# -------------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -102,8 +118,9 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'authentification.User'
 
-
+# -------------------------------
 # Validation des mots de passe
+# -------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -111,32 +128,35 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# configuration de l'email
+# -------------------------------
+# Email
+# -------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")  # ton email
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # ton mot de passe d'application
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
+# -------------------------------
 # Internationalisation
+# -------------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = "Indian/Antananarivo"
 USE_I18N = True
 USE_TZ = True
 
-# Fichiers statiques
-STATIC_URL = 'static/'
+# -------------------------------
+# Fichiers statiques et médias
+# -------------------------------
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
-# Clé primaire par défaut
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# Configuration de Channels avec Redis
+# -------------------------------
+# Channels / Redis
+# -------------------------------
 REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
 REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 
@@ -149,3 +169,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+# -------------------------------
+# Clé primaire par défaut
+# -------------------------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
