@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------------
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1", "freelance.local"]
+ALLOWED_HOSTS = ["backend","192.168.88.245", "localhost", "127.0.0.1"]
 
 # -------------------------------
 # Applications installées
@@ -71,13 +71,14 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://freelance.local:32157",  # ✅ inclure le port NodePort si utilisé
+     "http://192.168.88.245:5173"
+    # ✅ inclure le port NodePort si utilisé
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://freelance.local:32157",
+    "http://192.168.88.245:5173"
 ]
 
 # -------------------------------
