@@ -153,7 +153,7 @@ USE_TZ = True
 # Fichiers statiques et médias
 # -------------------------------
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
+MEDIA_URL = config("MEDIA_URL", default="http://192.168.88.245:30000/media/")
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # -------------------------------
