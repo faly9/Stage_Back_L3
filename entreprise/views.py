@@ -7,6 +7,9 @@ from .serializers import EntrepriseSerializer
 from rest_framework.decorators import action
 from rest_framework import status
 from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 
 class EntrepriseViewSet(viewsets.ModelViewSet):
     serializer_class = EntrepriseSerializer
@@ -40,7 +43,14 @@ class EntrepriseViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_my_entreprise(request):
-    entreprise = Entreprise.objects.get(user=request.user)
-    print(entreprise.id_entreprise)
-    return JsonResponse({"entreprise_id": entreprise.id_entreprise})
+    try:
+        entreprise = Entreprise.objects.get(user=request.user)
+        return JsonResponse({"entreprise_id": entreprise.id_entreprise})
+    except Entreprise.DoesNotExist:
+        return JsonResponse(
+            {"error": "Aucune entreprise associée à cet utilisateur."},
+            status=404
+        )
