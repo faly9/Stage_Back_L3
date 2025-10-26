@@ -38,7 +38,7 @@ def register_user(request):
 
     # --- 3️⃣ Générer le lien de vérification ---
     token = default_token_generator.make_token(user)
-    verification_link = f"http://tairo_fa_zahay_sahy:5173/verify/{user.pk}/{token}"  # lien côté React
+    verification_link = f"{settings.FRONTEND_URL}/verify/{user.pk}/{token}"  # lien côté React
     print(verification_link)
 
     # --- 4️⃣ Envoyer le mail de vérification ---
