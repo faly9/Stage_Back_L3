@@ -9,7 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------------
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = ["*"]
+
+# C’est pour les hôtes HTTP qui peuvent accéder au backend.
+ALLOWED_HOSTS = ["192.168.88.27" , "backend" , "localhost" ]
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
@@ -69,15 +71,18 @@ CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
 
+# C’est pour les origines qui sont autorisées pour les requêtes POST / PUT / DELETE (CSRF check).
 CSRF_TRUSTED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
+    "http://192.168.88.27:5173"
     # ✅ inclure le port NodePort si utilisé
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
+    "http://192.168.88.27:5173"
 ]
 
 # -------------------------------
