@@ -3,6 +3,8 @@ from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
 from .models import Freelance
 from .serializers import FreelanceSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 class FreelanceViewSet(viewsets.ModelViewSet):
     serializer_class = FreelanceSerializer
