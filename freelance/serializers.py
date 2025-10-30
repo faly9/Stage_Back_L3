@@ -3,7 +3,7 @@ from .models import Freelance
 
 class FreelanceSerializer(serializers.ModelSerializer):
     freelance_email = serializers.EmailField(source="user.email", read_only=True)
-    photo = serializers.SerializerMethodField()  # champ personnalisé pour photo
+    photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Freelance
@@ -12,5 +12,6 @@ class FreelanceSerializer(serializers.ModelSerializer):
 
     def get_photo(self, obj):
         if obj.photo:
-            return obj.photo.name  # renvoie seulement le chemin relatif /media/...
+            # renvoie uniquement le chemin relatif
+            return obj.photo.url.replace(obj.photo.storage.base_url, '')  
         return None
