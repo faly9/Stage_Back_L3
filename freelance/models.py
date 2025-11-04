@@ -23,5 +23,4 @@ class Freelance(models.Model):
 
     def __str__(self):
         return f"{self.nom} - {self.competence}"
-
-# Create your models here.
+    
