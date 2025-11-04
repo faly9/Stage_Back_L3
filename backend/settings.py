@@ -76,13 +76,16 @@ CSRF_TRUSTED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173"
+ "http://192.168.88.27:5173"
+
     # ✅ inclure le port NodePort si utilisé
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://192.168.88.27:5173"
 ]
 
 # -------------------------------
