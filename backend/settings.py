@@ -11,7 +11,7 @@ SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 
 # C’est pour les hôtes HTTP qui peuvent accéder au backend.
-ALLOWED_HOSTS = ["192.168.88.27" , "backend" , "localhost" ]
+ALLOWED_HOSTS = ["192.168.88.245" , "backend" , "localhost" ]
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
@@ -74,17 +74,18 @@ CORS_ALLOW_CREDENTIALS = True
 # C’est pour les origines qui sont autorisées pour les requêtes POST / PUT / DELETE (CSRF check).
 CSRF_TRUSTED_ORIGINS = [
     "http://frontend",
-    "http://frontend:80",
+    "http://frontend:80",  # connexion interne kubernetes
     "http://localhost:5173",
-    "http://192.168.88.27:5173"
-    # ✅ inclure le port NodePort si utilisé
+    "http://192.168.88.27:5173",  # avec kubernetes
+    "http://192.168.88.245:80"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://frontend",
-    "http://frontend:80",
+    "http://frontend:80", # connexion interne kubernetes
     "http://localhost:5173",
-    "http://192.168.88.27:5173"
+    "http://192.168.88.27:5173", # avec kubernetes
+    "http://192.168.88.245:80"
 ]
 
 # -------------------------------
@@ -159,6 +160,7 @@ USE_TZ = True
 # -------------------------------
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # -------------------------------
