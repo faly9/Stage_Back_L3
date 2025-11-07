@@ -11,7 +11,7 @@ SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 
 # C’est pour les hôtes HTTP qui peuvent accéder au backend.
-ALLOWED_HOSTS = ["192.168.88.245" , "backend" , "localhost" ]
+ALLOWED_HOSTS = ["192.168.88.245" , "freelance.stage", "backend" , "localhost" ]
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
@@ -77,7 +77,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://frontend:80",  # connexion interne kubernetes
     "http://localhost:5173",
     "http://192.168.88.27:5173",  # avec kubernetes
-    "http://192.168.88.245:80"
+    "http://192.168.88.245:80",
+    "http://freelance.stage:30000",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -85,7 +86,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://frontend:80", # connexion interne kubernetes
     "http://localhost:5173",
     "http://192.168.88.27:5173", # avec kubernetes
-    "http://192.168.88.245:80"
+    "http://192.168.88.245:80",
+    "http://freelance.stage:30000",
+
 ]
 
 # -------------------------------
