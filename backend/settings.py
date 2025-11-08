@@ -11,7 +11,7 @@ SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 
 # C’est pour les hôtes HTTP qui peuvent accéder au backend.
-ALLOWED_HOSTS = ["192.168.88.245" , "freelance.stage", "backend" , "localhost" ]
+ALLOWED_HOSTS = ["192.168.88.245" , "freelance.stage", "backend" , "localhost" ,  "backend.freelance.svc.cluster.local" ]
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
