@@ -27,6 +27,7 @@ urlpatterns = [
     path('msn/', include('mission.urls')),
     path('frl/', include('freelance.urls')),
     path('ptl/' , include('candidature.urls')),
+    path('metrics/', include('metrics.urls')),
 ]
 
 if settings.DEBUG:

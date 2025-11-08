@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'mission',
     'freelance',
     'candidature',
+    'metrics',
 ]
 
 SITE_ID = 1
