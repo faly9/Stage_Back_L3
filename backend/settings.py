@@ -18,6 +18,7 @@ FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 # Applications installées
 # -------------------------------
 INSTALLED_APPS = [
+    'django_prometheus',
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,7 +36,6 @@ INSTALLED_APPS = [
     'mission',
     'freelance',
     'candidature',
-    'metrics',
 ]
 
 SITE_ID = 1
@@ -44,6 +44,7 @@ SITE_ID = 1
 # Middleware
 # -------------------------------
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -52,8 +53,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ] 
 
+PROMETHEUS_EXPORT_MIGRATIONS = False
 # -------------------------------
 # DRF & Auth
 # -------------------------------

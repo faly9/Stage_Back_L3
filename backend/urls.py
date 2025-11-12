@@ -21,13 +21,13 @@ from django.conf.urls.static import static  # <-- pour servir les fichiers médi
 
 
 urlpatterns = [
+    path('', include('django_prometheus.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('authentification.urls')),
     path('etr/',include('entreprise.urls')),
     path('msn/', include('mission.urls')),
     path('frl/', include('freelance.urls')),
     path('ptl/' , include('candidature.urls')),
-    path('metrics/', include('metrics.urls')),
 ]
 
 if settings.DEBUG:
