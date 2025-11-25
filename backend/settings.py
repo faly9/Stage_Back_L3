@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'candidature',
 ]
 
+
+# settings.py
+
 SITE_ID = 1
 
 # -------------------------------
@@ -82,7 +85,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://192.168.88.27:5173",  # avec kubernetes
     "http://192.168.88.245:80",
-    "http://freelance.stage:30000",
+    "http://freelance.stage:80",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -91,7 +94,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://192.168.88.27:5173", # avec kubernetes
     "http://192.168.88.245:80",
-    "http://freelance.stage:30000",
+    "http://freelance.stage:80",
 
 ]
 
@@ -169,6 +172,8 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+GS_BUCKET_NAME = "freelance-media"
 
 # -------------------------------
 # Channels / Redis
