@@ -172,9 +172,17 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-GS_BUCKET_NAME = "freelance-media"
 
+if not DEBUG:
+    # Production : GCS
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_BUCKET_NAME = "freelance-media"
+    GS_DEFAULT_ACL = None
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+else:
+    # Développement local
+    MEDIA_URL = '/media/'
+    
 # -------------------------------
 # Channels / Redis
 # -------------------------------
