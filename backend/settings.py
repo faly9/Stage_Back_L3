@@ -178,7 +178,7 @@ if not DEBUG:
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_BUCKET_NAME = "freelance-media"
     GS_DEFAULT_ACL = None
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}"
 else:
     # Développement local
     MEDIA_URL = '/media/'
