@@ -1,6 +1,7 @@
 from pathlib import Path
 from decouple import config
-import os 
+import os
+from google.oauth2 import service_account  # nécessaire si tu utilises GCS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,8 +11,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-# C’est pour les hôtes HTTP qui peuvent accéder au backend.
-ALLOWED_HOSTS = ["192.168.88.245" , "freelance.stage", "backend" , "localhost" ,  "backend.freelance.svc.cluster.local" ]
+ALLOWED_HOSTS = [
+    "192.168.88.245",
+    "freelance.stage",
+    "backend",
+    "localhost",
+    "backend.freelance.svc.cluster.local"
+]
+
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
@@ -38,9 +45,6 @@ INSTALLED_APPS = [
     'candidature',
 ]
 
-
-# settings.py
-
 SITE_ID = 1
 
 # -------------------------------
@@ -57,9 +61,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
-] 
+]
 
 PROMETHEUS_EXPORT_MIGRATIONS = False
+
 # -------------------------------
 # DRF & Auth
 # -------------------------------
@@ -74,29 +79,20 @@ REST_FRAMEWORK = {
 # -------------------------------
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
-# C’est pour les origines qui sont autorisées pour les requêtes POST / PUT / DELETE (CSRF check).
 CSRF_TRUSTED_ORIGINS = [
     "http://frontend",
-    "http://frontend:80",  # connexion interne kubernetes
+    "http://frontend:80",
     "http://localhost:5173",
-    "http://192.168.88.27:5173",  # avec kubernetes
+    "http://192.168.88.27:5173",
     "http://192.168.88.245:80",
     "http://freelance.stage:80",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://frontend",
-    "http://frontend:80", # connexion interne kubernetes
-    "http://localhost:5173",
-    "http://192.168.88.27:5173", # avec kubernetes
-    "http://192.168.88.245:80",
-    "http://freelance.stage:80",
-
-]
+CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS.copy()
 
 # -------------------------------
 # URLs et Templates
@@ -176,13 +172,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 if not DEBUG:
     # Production : GCS
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-    GS_BUCKET_NAME = "freelance-media"
+    GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
     GS_DEFAULT_ACL = None
+    # Service account JSON
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.path.join(BASE_DIR, "gcs-key.json")
+    )
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 else:
     # Développement local
     MEDIA_URL = '/media/'
-    
+
 # -------------------------------
 # Channels / Redis
 # -------------------------------
