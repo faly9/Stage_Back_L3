@@ -2,7 +2,7 @@ from pathlib import Path
 from decouple import config
 import os
 from google.oauth2 import service_account
-from google.auth import default as google_auth_default # Pour l'authentification via Workload Identity
+from google.auth import default as google_auth_default
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,13 +18,12 @@ ALLOWED_HOSTS = [
     "backend",
     "localhost",
     "backend.freelance.svc.cluster.local",
-    # Ajoutez ici les FQDN publics si vous en avez
 ]
 
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
-# Applications installées
+# Applications
 # -------------------------------
 INSTALLED_APPS = [
     'django_prometheus',
@@ -40,7 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'storages',
 
-    # apps locales
+    # Local apps
     'authentification',
     'entreprise',
     'mission',
@@ -66,10 +65,8 @@ MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
-PROMETHEUS_EXPORT_MIGRATIONS = False
-
 # -------------------------------
-# DRF & Auth
+# DRF
 # -------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -78,7 +75,7 @@ REST_FRAMEWORK = {
 }
 
 # -------------------------------
-# CORS pour React
+# CORS / CSRF
 # -------------------------------
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -86,22 +83,30 @@ CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
-# Utilisation de config() pour les origines de CORS
+# --- Oranges CORS principales ---
 CORS_TRUSTED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173",
     "http://192.168.88.27:5173",
-    "http://192.168.88.245:80",
-    "http://freelance.stage:80",
+    "http://192.168.88.245",
+    "http://freelance.stage",
 ]
-# Ajouter les origines définies par l'environnement si nécessaire
-CORS_TRUSTED_ORIGINS.extend(config("CORS_TRUSTED_ORIGINS", default="", cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]))
+
+# Ajout dynamique via variables d’environnement
+CORS_TRUSTED_ORIGINS.extend(
+    config("CORS_TRUSTED_ORIGINS",
+           default="",
+           cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
+)
 
 CORS_ALLOWED_ORIGINS = CORS_TRUSTED_ORIGINS.copy()
 
+# CSRF conforme Django 4+
+CSRF_TRUSTED_ORIGINS = [o.replace("http://", "http://").replace("https://", "https://") for o in CORS_TRUSTED_ORIGINS]
+
 # -------------------------------
-# URLs et Templates
+# Templates
 # -------------------------------
 ROOT_URLCONF = 'backend.urls'
 
@@ -123,7 +128,7 @@ TEMPLATES = [
 ASGI_APPLICATION = "backend.asgi.application"
 
 # -------------------------------
-# Base de données MySQL
+# Database
 # -------------------------------
 DATABASES = {
     'default': {
@@ -132,14 +137,14 @@ DATABASES = {
         'USER': config("DB_USER"),
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST", default="localhost"),
-        'PORT': config("DB_PORT", default="3306", cast=int),
+        'PORT': config("DB_PORT", default=3306, cast=int),
     }
 }
 
 AUTH_USER_MODEL = 'authentification.User'
 
 # -------------------------------
-# Validation des mots de passe
+# Password validators
 # -------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -149,7 +154,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # -------------------------------
-# Email
+# Emails
 # -------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -168,93 +173,64 @@ USE_I18N = True
 USE_TZ = True
 
 # -------------------------------
-# Fichiers statiques et médias
+# Static & Media
 # -------------------------------
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # Utilisé uniquement en mode développement (DEBUG=True)
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-# Configuration de Google Cloud Storage (GCS)
+# -------------------------------
+# Google Cloud Storage (Prod)
+# -------------------------------
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
-GS_PROJECT_ID = config("GS_PROJECT_ID", default=None)
-GS_DEFAULT_ACL = None 
-GS_LOCATION = 'auto' # Optionnel, pour spécifier la région
+GS_PROJECT_ID = config("GS_PROJECT_ID", default="soutenance-479118")
+GS_DEFAULT_ACL = None
 GS_CREDENTIALS = None
 
-# Tente de charger les identifiants depuis un fichier JSON (pour dev/tests locaux ou environnements spécifiques)
+# Charge gcs-key.json si présent
 if os.path.exists(os.path.join(BASE_DIR, "gcs-key.json")):
     try:
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
             os.path.join(BASE_DIR, "gcs-key.json")
         )
     except Exception as e:
-        # En cas d'erreur de chargement (fichier corrompu, etc.)
-        print(f"Avertissement: Impossible de charger 'gcs-key.json'. Utilisation de l'authentification par défaut. Erreur: {e}")
-        pass
-
+        print("Erreur chargement gcs-key.json:", e)
 
 if not DEBUG:
-    # --- Mode Production (GCS) ---
-    
-    # Si GS_CREDENTIALS n'est pas chargé (et que nous sommes sur GCP/GKE),
-    # il est préférable de laisser google-cloud-storage utiliser Workload Identity 
-    # ou les identifiants par défaut du service.
+    # Workload Identity
     if GS_CREDENTIALS is None:
         try:
-             # Utilise Workload Identity ou les identifiants d'environnement GKE/Cloud Run
             GS_CREDENTIALS, _ = google_auth_default()
-            print("INFO: Utilisation des identifiants Google Cloud par défaut (Workload Identity, etc.).")
-        except Exception as e:
-            print(f"ATTENTION: Impossible d'obtenir les identifiants par défaut pour GCS. Assurez-vous que Workload Identity est configuré. Erreur: {e}")
+        except:
             pass
 
-    # Utilisation de la nouvelle syntaxe `STORAGES` (Django 4.2+)
     STORAGES = {
-        # Fichiers média (images)
         "default": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
             "OPTIONS": {
                 "bucket_name": GS_BUCKET_NAME,
                 "project_id": GS_PROJECT_ID,
                 "credentials": GS_CREDENTIALS,
-                "location": 'media', # Optionnel: stocke tous les uploads dans un sous-dossier 'media/' du bucket
+                "location": "media",
             }
         },
-        # Fichiers statiques
         "staticfiles": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
             "OPTIONS": {
                 "bucket_name": GS_BUCKET_NAME,
                 "project_id": GS_PROJECT_ID,
                 "credentials": GS_CREDENTIALS,
-                "location": 'static', # Optionnel: stocke tous les statics dans un sous-dossier 'static/' du bucket
+                "location": "static",
             }
         }
     }
-    
-    # URL de base pour les fichiers médias (pour que les modèles y fassent référence)
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/" 
-    
-    # URL de base pour les fichiers statiques (pour collectstatic)
-    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
     STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
 
-else:
-    # --- Mode Développement Local (DEBUG=True) ---
-    MEDIA_URL = '/media/'
-    # Utilisation de la nouvelle syntaxe `STORAGES` (Django 4.2+)
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        }
-    }
-
-
 # -------------------------------
-# Channels / Redis
+# Redis / Channels
 # -------------------------------
 REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
 REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
@@ -262,13 +238,8 @@ REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(REDIS_HOST, REDIS_PORT)],
-        },
+        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)]},
     },
 }
 
-# -------------------------------
-# Clé primaire par défaut
-# -------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
