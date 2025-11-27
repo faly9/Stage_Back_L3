@@ -17,13 +17,13 @@ ALLOWED_HOSTS = [
     "freelance.stage",
     "backend",
     "localhost",
-    "backend.freelance.svc.cluster.local",
+    "backend.freelance.svc.cluster.local"
 ]
 
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # -------------------------------
-# Applications
+# Applications installées
 # -------------------------------
 INSTALLED_APPS = [
     'django_prometheus',
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'storages',
 
-    # Local apps
+    # Apps locales
     'authentification',
     'entreprise',
     'mission',
@@ -65,8 +65,10 @@ MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
+PROMETHEUS_EXPORT_MIGRATIONS = False
+
 # -------------------------------
-# DRF
+# DRF & Auth
 # -------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -75,7 +77,7 @@ REST_FRAMEWORK = {
 }
 
 # -------------------------------
-# CORS / CSRF
+# CORS pour React
 # -------------------------------
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -83,30 +85,19 @@ CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
-# --- Oranges CORS principales ---
-CORS_TRUSTED_ORIGINS = [
+CSRF_TRUSTED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173",
     "http://192.168.88.27:5173",
-    "http://192.168.88.245",
-    "http://freelance.stage",
+    "http://192.168.88.245:80",
+    "http://freelance.stage:80",
 ]
 
-# Ajout dynamique via variables d’environnement
-CORS_TRUSTED_ORIGINS.extend(
-    config("CORS_TRUSTED_ORIGINS",
-           default="",
-           cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
-)
-
-CORS_ALLOWED_ORIGINS = CORS_TRUSTED_ORIGINS.copy()
-
-# CSRF conforme Django 4+
-CSRF_TRUSTED_ORIGINS = [o.replace("http://", "http://").replace("https://", "https://") for o in CORS_TRUSTED_ORIGINS]
+CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS.copy()
 
 # -------------------------------
-# Templates
+# URLs et Templates
 # -------------------------------
 ROOT_URLCONF = 'backend.urls'
 
@@ -128,7 +119,7 @@ TEMPLATES = [
 ASGI_APPLICATION = "backend.asgi.application"
 
 # -------------------------------
-# Database
+# Base de données MySQL
 # -------------------------------
 DATABASES = {
     'default': {
@@ -137,14 +128,14 @@ DATABASES = {
         'USER': config("DB_USER"),
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST", default="localhost"),
-        'PORT': config("DB_PORT", default=3306, cast=int),
+        'PORT': config("DB_PORT", default="3306"),
     }
 }
 
 AUTH_USER_MODEL = 'authentification.User'
 
 # -------------------------------
-# Password validators
+# Validation des mots de passe
 # -------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -154,7 +145,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # -------------------------------
-# Emails
+# Email
 # -------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -173,37 +164,40 @@ USE_I18N = True
 USE_TZ = True
 
 # -------------------------------
-# Static & Media
+# Fichiers statiques et médias
 # -------------------------------
-STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # -------------------------------
-# Google Cloud Storage (Prod)
+# Google Cloud Storage (GCS)
 # -------------------------------
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
-GS_PROJECT_ID = config("GS_PROJECT_ID", default="soutenance-479118")
-GS_DEFAULT_ACL = None
+GS_PROJECT_ID = config("GS_PROJECT_ID", default=None)
 GS_CREDENTIALS = None
 
-# Charge gcs-key.json si présent
-if os.path.exists(os.path.join(BASE_DIR, "gcs-key.json")):
-    try:
-        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-            os.path.join(BASE_DIR, "gcs-key.json")
-        )
-    except Exception as e:
-        print("Erreur chargement gcs-key.json:", e)
+# Chemin du secret monté dans Kubernetes
+json_key_path = "/secrets/gcs-key.json"
 
+if os.path.exists(json_key_path):
+    try:
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(json_key_path)
+    except Exception as e:
+        print(f"Avertissement: Impossible de charger '{json_key_path}'. Erreur: {e}")
+
+# -------------------------------
+# STORAGES (Django 4.2+)
+# -------------------------------
 if not DEBUG:
-    # Workload Identity
+    # Production → GCS
     if GS_CREDENTIALS is None:
         try:
             GS_CREDENTIALS, _ = google_auth_default()
-        except:
-            pass
+            print("INFO: Utilisation des identifiants par défaut (Workload Identity)")
+        except Exception as e:
+            print(f"ATTENTION: Impossible d'obtenir les identifiants par défaut. Erreur: {e}")
 
     STORAGES = {
         "default": {
@@ -223,14 +217,24 @@ if not DEBUG:
                 "credentials": GS_CREDENTIALS,
                 "location": "static",
             }
-        }
+        },
     }
 
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
+    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
 
+else:
+    # Développement local → disque
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    MEDIA_URL = '/media/'
+    STATIC_URL = '/static/'
+
 # -------------------------------
-# Redis / Channels
+# Channels / Redis
 # -------------------------------
 REDIS_HOST = config("REDIS_HOST", default="127.0.0.1")
 REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
@@ -238,8 +242,13 @@ REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)]},
+        "CONFIG": {
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
+        },
     },
 }
 
+# -------------------------------
+# Clé primaire par défaut
+# -------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
