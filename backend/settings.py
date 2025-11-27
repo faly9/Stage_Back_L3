@@ -1,7 +1,8 @@
 from pathlib import Path
 from decouple import config
 import os
-from google.oauth2 import service_account  # nécessaire si tu utilises GCS
+from google.oauth2 import service_account
+from google.auth import default as google_auth_default # Pour l'authentification via Workload Identity
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,7 +17,8 @@ ALLOWED_HOSTS = [
     "freelance.stage",
     "backend",
     "localhost",
-    "backend.freelance.svc.cluster.local"
+    "backend.freelance.svc.cluster.local",
+    # Ajoutez ici les FQDN publics si vous en avez
 ]
 
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'rest_framework',
     'corsheaders',
+    'storages',
 
     # apps locales
     'authentification',
@@ -83,7 +86,8 @@ CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
+# Utilisation de config() pour les origines de CORS
+CORS_TRUSTED_ORIGINS = [
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173",
@@ -91,8 +95,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.88.245:80",
     "http://freelance.stage:80",
 ]
+# Ajouter les origines définies par l'environnement si nécessaire
+CORS_TRUSTED_ORIGINS.extend(config("CORS_TRUSTED_ORIGINS", default="", cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]))
 
-CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS.copy()
+CORS_ALLOWED_ORIGINS = CORS_TRUSTED_ORIGINS.copy()
 
 # -------------------------------
 # URLs et Templates
@@ -126,7 +132,7 @@ DATABASES = {
         'USER': config("DB_USER"),
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST", default="localhost"),
-        'PORT': config("DB_PORT", default="3306"),
+        'PORT': config("DB_PORT", default="3306", cast=int),
     }
 }
 
@@ -165,23 +171,87 @@ USE_TZ = True
 # Fichiers statiques et médias
 # -------------------------------
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # Utilisé uniquement en mode développement (DEBUG=True)
+
+# Configuration de Google Cloud Storage (GCS)
+GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
+GS_PROJECT_ID = config("GS_PROJECT_ID", default=None)
+GS_DEFAULT_ACL = None 
+GS_LOCATION = 'auto' # Optionnel, pour spécifier la région
+GS_CREDENTIALS = None
+
+# Tente de charger les identifiants depuis un fichier JSON (pour dev/tests locaux ou environnements spécifiques)
+if os.path.exists(os.path.join(BASE_DIR, "gcs-key.json")):
+    try:
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+            os.path.join(BASE_DIR, "gcs-key.json")
+        )
+    except Exception as e:
+        # En cas d'erreur de chargement (fichier corrompu, etc.)
+        print(f"Avertissement: Impossible de charger 'gcs-key.json'. Utilisation de l'authentification par défaut. Erreur: {e}")
+        pass
+
 
 if not DEBUG:
-    # Production : GCS
-    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-    GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
-    GS_DEFAULT_ACL = None
-    # Service account JSON
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-        os.path.join(BASE_DIR, "gcs-key.json")
-    )
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+    # --- Mode Production (GCS) ---
+    
+    # Si GS_CREDENTIALS n'est pas chargé (et que nous sommes sur GCP/GKE),
+    # il est préférable de laisser google-cloud-storage utiliser Workload Identity 
+    # ou les identifiants par défaut du service.
+    if GS_CREDENTIALS is None:
+        try:
+             # Utilise Workload Identity ou les identifiants d'environnement GKE/Cloud Run
+            GS_CREDENTIALS, _ = google_auth_default()
+            print("INFO: Utilisation des identifiants Google Cloud par défaut (Workload Identity, etc.).")
+        except Exception as e:
+            print(f"ATTENTION: Impossible d'obtenir les identifiants par défaut pour GCS. Assurez-vous que Workload Identity est configuré. Erreur: {e}")
+            pass
+
+    # Utilisation de la nouvelle syntaxe `STORAGES` (Django 4.2+)
+    STORAGES = {
+        # Fichiers média (images)
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_NAME,
+                "project_id": GS_PROJECT_ID,
+                "credentials": GS_CREDENTIALS,
+                "location": 'media', # Optionnel: stocke tous les uploads dans un sous-dossier 'media/' du bucket
+            }
+        },
+        # Fichiers statiques
+        "staticfiles": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_NAME,
+                "project_id": GS_PROJECT_ID,
+                "credentials": GS_CREDENTIALS,
+                "location": 'static', # Optionnel: stocke tous les statics dans un sous-dossier 'static/' du bucket
+            }
+        }
+    }
+    
+    # URL de base pour les fichiers médias (pour que les modèles y fassent référence)
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/" 
+    
+    # URL de base pour les fichiers statiques (pour collectstatic)
+    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
+
 else:
-    # Développement local
+    # --- Mode Développement Local (DEBUG=True) ---
     MEDIA_URL = '/media/'
+    # Utilisation de la nouvelle syntaxe `STORAGES` (Django 4.2+)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
+
 
 # -------------------------------
 # Channels / Redis
