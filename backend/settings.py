@@ -163,41 +163,26 @@ TIME_ZONE = "Indian/Antananarivo"
 USE_I18N = True
 USE_TZ = True
 
+# STATIC & MEDIA (LOCAL MODE)
 # -------------------------------
-# Fichiers statiques et médias
-# -------------------------------
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+STATIC_ROOT = BASE_DIR / "static"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # -------------------------------
-# Google Cloud Storage (GCS)
-# -------------------------------
-GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="freelance-media")
-GS_PROJECT_ID = config("GS_PROJECT_ID", default=None)
-GS_CREDENTIALS = None
-
-# Chemin du secret monté dans Kubernetes
-json_key_path = "/secrets/gcs-key.json"
-
-if os.path.exists(json_key_path):
-    try:
-        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(json_key_path)
-    except Exception as e:
-        print(f"Avertissement: Impossible de charger '{json_key_path}'. Erreur: {e}")
-
-# -------------------------------
-# STORAGES (Django 4.2+)
+# GOOGLE CLOUD STORAGE
 # -------------------------------
 if not DEBUG:
-    # Production → GCS
-    if GS_CREDENTIALS is None:
-        try:
-            GS_CREDENTIALS, _ = google_auth_default()
-            print("INFO: Utilisation des identifiants par défaut (Workload Identity)")
-        except Exception as e:
-            print(f"ATTENTION: Impossible d'obtenir les identifiants par défaut. Erreur: {e}")
+
+    GS_BUCKET_NAME = config("GS_BUCKET_NAME")
+    GS_PROJECT_ID = config("GS_PROJECT_ID")
+
+    # Chemin dans le conteneur (monté depuis un secret Kubernetes)
+    GCS_KEY_PATH = "/secrets/key.json"
+
+    # On charge la clé de service GCP
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GCS_KEY_PATH)
 
     STORAGES = {
         "default": {
@@ -206,8 +191,8 @@ if not DEBUG:
                 "bucket_name": GS_BUCKET_NAME,
                 "project_id": GS_PROJECT_ID,
                 "credentials": GS_CREDENTIALS,
-                "location": "media",
-            }
+                "location": "media",  # dossier dans le bucket
+            },
         },
         "staticfiles": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
@@ -216,23 +201,12 @@ if not DEBUG:
                 "project_id": GS_PROJECT_ID,
                 "credentials": GS_CREDENTIALS,
                 "location": "static",
-            }
+            },
         },
     }
 
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
-    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
-
-else:
-    # Développement local → disque
-    STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-    }
-    MEDIA_URL = '/media/'
-    STATIC_URL = '/static/'
-
 # -------------------------------
 # Channels / Redis
 # -------------------------------
