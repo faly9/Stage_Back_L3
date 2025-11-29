@@ -33,7 +33,7 @@ def candidature_updated(sender, instance, created, **kwargs):
         "timezone" : instance.timezone,
         "mission_titre": instance.mission.titre,
         "entreprise_nom": instance.mission.entreprise.nom,
-        "entreprise_photo": instance.mission.entreprise.profile_image.url if instance.mission.entreprise.profile_image else None,
+        "entreprise_photo": instance.mission.entreprise.profile_image.name if instance.mission.entreprise.profile_image else None,
         "freelance_nom": instance.freelance.nom,
     }
 

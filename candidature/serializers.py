@@ -70,8 +70,25 @@ class notification(serializers.ModelSerializer):
     mission_titre = serializers.CharField(source="mission.titre", read_only=True)
     freelance_nom = serializers.CharField(source="freelance.nom", read_only=True)
     entreprise_nom = serializers.CharField(source="mission.entreprise.nom" , read_only=True)
-    entreprise_photo = serializers.CharField(source="mission.entreprise.profile_image" , read_only=True)
+    entreprise_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Candidature
-        fields = ["id_candidature","entreprise_photo", "timezone" ,"entreprise_nom","mission_titre","freelance_nom","status", "date_entretien", "commentaire_entretien"]
+        fields = [
+            "id_candidature",
+            "entreprise_photo",
+            "timezone",
+            "entreprise_nom",
+            "mission_titre",
+            "freelance_nom",
+            "status",
+            "date_entretien",
+            "commentaire_entretien",
+        ]
+
+    def get_entreprise_photo(self, obj):
+        image = obj.mission.entreprise.profile_image
+        if image:
+            # Retourne seulement le chemin relatif (ex: "profiles/faly.png")
+            return image.name
+        return None
