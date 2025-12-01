@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user , check_auth , logout_view ,verify_email, get_user_info
+from .views import register_user,login_user ,  check_auth , logout_view ,verify_email, get_user_info
 
 urlpatterns = [
     path("register/", register_user , name="register"),
@@ -8,5 +8,4 @@ urlpatterns = [
     path("info/" , get_user_info , name="info"),
     path("logout/", logout_view , name="logout"),
     path('verify/<int:uid>/<str:token>/', verify_email, name='verify-email'),
-
 ]
