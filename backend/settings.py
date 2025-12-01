@@ -121,17 +121,26 @@ ASGI_APPLICATION = "backend.asgi.application"
 # -------------------------------
 # Base de données MySQL
 # -------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config("DB_NAME"),
-        'USER': config("DB_USER"),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config("DB_HOST", default="localhost"),
-        'PORT': config("DB_PORT", default="3306"),
+if os.environ.get("CI") == "true":
+    # Base super rapide pour les tests CI
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",  # DB en mémoire RAM → hyper rapide
+        }
     }
-}
-
+else:
+    # MySQL en local + production
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config("DB_NAME"),
+            'USER': config("DB_USER"),
+            'PASSWORD': config("DB_PASSWORD"),
+            'HOST': config("DB_HOST", default="localhost"),
+            'PORT': config("DB_PORT", default="3306"),
+        }
+    }
 AUTH_USER_MODEL = 'authentification.User'
 
 # -------------------------------
