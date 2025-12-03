@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from candidature.models import Candidature
+import pytest
 from mission.models import Mission
 from entreprise.models import Entreprise
 from freelance.models import Freelance
@@ -11,6 +12,7 @@ from datetime import datetime, timedelta
 
 User = get_user_model()
 
+@pytest.mark.unit
 @override_settings(
     CHANNEL_LAYERS={"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 )

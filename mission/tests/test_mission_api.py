@@ -1,11 +1,12 @@
 # mission/tests/test_mission_api.py
 from django.test import override_settings
 from rest_framework.test import APITestCase
+import pytest
 from django.contrib.auth import get_user_model
 from mission.models import Mission, Entreprise
 
 User = get_user_model()
-
+@pytest.mark.unit
 @override_settings(
     CHANNEL_LAYERS={
         "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}

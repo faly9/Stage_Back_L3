@@ -1,10 +1,12 @@
 from django.urls import reverse
+import pytest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
 User = get_user_model()
+@pytest.mark.unit
 
 class AuthLoginTest(APITestCase):
 

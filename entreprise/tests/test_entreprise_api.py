@@ -2,9 +2,11 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
+import pytest
 from entreprise.models import Entreprise
 
 User = get_user_model()
+@pytest.mark.unit
 
 class EntrepriseAPITest(APITestCase):
 

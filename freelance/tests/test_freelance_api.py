@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
+import pytest
 from rest_framework.reverse import reverse
 from freelance.models import Freelance
 
 User = get_user_model()
+@pytest.mark.unit
 
 class FreelanceAPITest(APITestCase):
 

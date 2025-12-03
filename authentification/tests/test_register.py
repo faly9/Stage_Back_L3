@@ -1,12 +1,15 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from unittest.mock import patch
+import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from unittest.mock import patch, MagicMock
 from django.contrib.auth.hashers import make_password
 User = get_user_model()
 
+
+@pytest.mark.unit
 class RegisterUserTest(APITestCase):
 
     @patch("authentification.views.send_mail")   # 👉 ON MOCK ICI
