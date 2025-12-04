@@ -14,6 +14,7 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = [
     "192.168.88.245",
+    "136.116.238.53",
     "freelance.stage",
     "backend",
     "localhost",
@@ -86,6 +87,7 @@ SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
+    "136.116.238.53" , 
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173",
