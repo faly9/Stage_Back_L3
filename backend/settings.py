@@ -87,7 +87,7 @@ SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "136.116.238.53" , 
+    "http://136.116.238.53" , 
     "http://frontend",
     "http://frontend:80",
     "http://localhost:5173",
